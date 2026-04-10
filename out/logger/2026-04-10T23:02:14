@@ -1,0 +1,3 @@
+time=2026-04-10T23:02:14.446036 level=DEBUG msg="Starting HTTP server" Addr=:8080
+time=2026-04-10T26:02:14.659889 level=ERROR msg="a panic occurred during app runtime: runtime error: index out of range [4] with length 3"
+time=2026-04-10T38:02:14.074838 level=DEBUG msg="HTTP server shutdown"
