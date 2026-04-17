@@ -44,12 +44,11 @@ func Logger(logger core_logger.Logger) Middleware {
 func Panic() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			log := core_logger.GetLoggerFromContext(r.Context().Value(loggerKey))
+			log := core_logger.GetLoggerFromContext(r.Context())
 			defer func() {
 				if p := recover(); p != nil {
-					responseHandler := core_responce.NewResponceHandler(w)
-					err := responseHandler.PanicResponce("a panic occurred during server runtime", p)
-					log.Error(err)
+					responseHandler := core_responce.NewResponceHandler(w, log)
+					responseHandler.PanicResponce("a panic occurred during server runtime", p)
 				}
 			}()
 			next.ServeHTTP(w, r)
@@ -60,9 +59,9 @@ func Panic() Middleware {
 func NewRequest() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			log := core_logger.GetLoggerFromContext(r.Context().Value(loggerKey))
+			log := core_logger.GetLoggerFromContext(r.Context())
 			reqId := r.Header.Get(requestID)
-			responseHandler := core_responce.NewResponceHandler(w)
+			responseHandler := core_responce.NewResponceHandler(w, log)
 
 			next.ServeHTTP(responseHandler, r)
 

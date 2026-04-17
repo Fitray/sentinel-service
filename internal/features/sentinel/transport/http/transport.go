@@ -1,6 +1,17 @@
 package sentinel_transport_http
 
-import "net/http"
+import (
+	"context"
+	"net/http"
+)
+
+type ImageryTransport struct {
+	imageryService ImageryService
+}
+
+type ImageryService interface {
+	GetImagery(ctx context.Context, city string) ([]byte, error)
+}
 
 type Route struct {
 	Pattern string
@@ -8,12 +19,20 @@ type Route struct {
 	Handler http.HandlerFunc
 }
 
-func GetRoutes() []Route {
+func NewImageryTransport(
+	imageryService ImageryService,
+) ImageryTransport {
+	return ImageryTransport{
+		imageryService: imageryService,
+	}
+}
+
+func (h *ImageryTransport) GetRoutes() []Route {
 	return []Route{
 		{
-			Pattern: "/sentinel",
+			Pattern: "/sentinel/imagery",
 			Method:  http.MethodGet,
-			Handler: GetImagery,
+			Handler: h.GetImagery,
 		},
 	}
 }

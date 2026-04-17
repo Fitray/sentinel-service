@@ -7,4 +7,4 @@ run:
 	@go run ${PROJECT_ROOT}/cmd/app/main.go
 
 run-python:
-	@${PROJECT_ROOT}/.venv/bin/python ${PROJECT_ROOT}/internal/python/main.py
+	@${PROJECT_ROOT}/.venv/bin/python ${PROJECT_ROOT}/internal/python/main.py ${city}

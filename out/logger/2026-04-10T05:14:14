@@ -1,3 +1,0 @@
-time=2026-04-10T05:14:14.882828 level=DEBUG msg="Starting HTTP server" Addr=:8080
-time=2026-04-10T10:14:14.189548 level=INFO msg="new request" X-Request-ID=a6472711-0119-4bb1-a712-357717841f96 Method=GET statusCode=200
-time=2026-04-10T25:14:14.265837 level=DEBUG msg="HTTP server shutdown"
