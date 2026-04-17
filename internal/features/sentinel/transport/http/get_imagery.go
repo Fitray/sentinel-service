@@ -20,6 +20,7 @@ func (h *ImageryTransport) GetImagery(w http.ResponseWriter, r *http.Request) {
 			err,
 			core_errors.GetStatusCode(err),
 		)
+		return
 	}
 
 	contentType := http.DetectContentType(output)

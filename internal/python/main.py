@@ -31,16 +31,37 @@ class Service():
     def addCloudScore(self, image):
         scl = image.select('SCL')
 
-        cloud_mask = scl.eq(8).Or(scl.eq(9)).Or(scl.eq(10))
+        cloud_mask = (
+            scl.eq(3)
+            .Or(scl.eq(8))
+            .Or(scl.eq(9))
+            .Or(scl.eq(10))
+        )
 
         cloud_fraction = cloud_mask.reduceRegion(
             reducer=ee.Reducer.mean(),
             geometry=self.bbox,
-            scale=20,
+            scale=60,
             maxPixels=1e9
         ).get('SCL')
 
+        cloud_fraction = ee.Number(
+            ee.Algorithms.If(cloud_fraction, cloud_fraction, 1)
+        )
+
         return image.set('CLOUD_SCORE_BBOX', cloud_fraction)
+    
+    def addCoverage(self, image):
+        valid_mask = image.select('B4').mask()
+
+        coverage = valid_mask.reduceRegion(
+            reducer=ee.Reducer.mean(),
+            geometry=self.bbox,
+            scale=20,
+            maxPixels=1e9
+        ).get('B4')
+
+        return image.set('COVERAGE', coverage)
 
     def GetImage(self):
         if len(sys.argv) < 2:
@@ -55,12 +76,17 @@ class Service():
             ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
             .filterBounds(self.bbox)
             .filterDate("2022-06-01", "2024-06-30")
+            .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 50))
+            .limit(20)
             .map(self.addCloudScore)
             .sort("CLOUD_SCORE_BBOX")
-            .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 80))
         )
 
-        image = ee.Image(collection.first())
+        size = collection.size().getInfo()
+        if size == 0:
+            raise Exception("No images found for given filters")
+
+        image = collection.median()
 
         url = image.getThumbURL({
             "region": self.bbox,
