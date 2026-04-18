@@ -7,7 +7,7 @@ type ImageryService struct {
 }
 
 type ImageryRepository interface {
-	GetImagery(ctx context.Context, city string) ([]byte, error)
+	GetImagery(ctx context.Context, city, from, to string) ([]byte, error)
 }
 
 func NewImageryService(

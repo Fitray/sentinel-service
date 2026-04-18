@@ -12,9 +12,12 @@ func (h *ImageryTransport) GetImagery(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.GetLoggerFromContext(ctx)
 	httpHandler := core_responce.NewResponceHandler(w, logger)
-	city := r.URL.Query().Get("city")
 
-	output, err := h.imageryService.GetImagery(ctx, city)
+	city := r.URL.Query().Get("city")
+	from := r.URL.Query().Get("from")
+	to := r.URL.Query().Get("to")
+
+	output, err := h.imageryService.GetImagery(ctx, city, from, to)
 	if err != nil {
 		httpHandler.ErrorResponce(
 			err,

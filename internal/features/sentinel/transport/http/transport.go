@@ -10,7 +10,7 @@ type ImageryTransport struct {
 }
 
 type ImageryService interface {
-	GetImagery(ctx context.Context, city string) ([]byte, error)
+	GetImagery(ctx context.Context, city, from, to string) ([]byte, error)
 }
 
 type Route struct {

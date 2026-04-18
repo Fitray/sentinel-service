@@ -32,10 +32,11 @@ class Service():
         scl = image.select('SCL')
 
         cloud_mask = (
-            scl.eq(3)
-            .Or(scl.eq(8))
+            scl.eq(3)   # тени
+            .Or(scl.eq(8))  # облака
             .Or(scl.eq(9))
             .Or(scl.eq(10))
+            .Or(scl.eq(11))  # снег (!!)
         )
 
         cloud_fraction = cloud_mask.reduceRegion(
@@ -63,11 +64,42 @@ class Service():
 
         return image.set('COVERAGE', coverage)
 
+    def addWhitenessScore(self, image):
+        r = image.select('B4')
+        g = image.select('B3')
+        b = image.select('B2')
+
+        mean = r.add(g).add(b).divide(3)
+
+        whiteness = (
+            r.subtract(mean).abs()
+            .add(g.subtract(mean).abs())
+            .add(b.subtract(mean).abs())
+        )
+
+        # "белые" пиксели = высокая яркость + низкая вариация
+        white_pixels = mean.gt(2000).And(whiteness.lt(200))
+
+        white_fraction = white_pixels.reduceRegion(
+            reducer=ee.Reducer.mean(),
+            geometry=self.bbox,
+            scale=60,
+            maxPixels=1e9
+        ).get('B4')
+
+        white_fraction = ee.Number(
+            ee.Algorithms.If(white_fraction, white_fraction, 1)
+        )
+
+        return image.set('WHITE_SCORE', white_fraction)
+
     def GetImage(self):
         if len(sys.argv) < 2:
             raise ValueError("City argument missing")
         
         self.city = sys.argv[1].split("=")[-1]
+        self.date_from = sys.argv[2].split("=")[-1]
+        self.date_to = sys.argv[3].split("=")[-1]
 
         self.lat, self.lon = Handler.GetCoordinates(self.city)
         self.bbox = Handler.CreateBBox(self.lat, self.lon)
@@ -75,10 +107,14 @@ class Service():
         collection = (
             ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
             .filterBounds(self.bbox)
-            .filterDate("2022-06-01", "2024-06-30")
+            .filterDate(self.date_from, self.date_to)
             .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 50))
             .limit(20)
             .map(self.addCloudScore)
+            .map(self.addWhitenessScore)
+            .map(self.addCoverage)
+            .filter(ee.Filter.gt("COVERAGE", 0.9))
+            .sort("WHITE_SCORE")
             .sort("CLOUD_SCORE_BBOX")
         )
 
@@ -86,7 +122,7 @@ class Service():
         if size == 0:
             raise Exception("No images found for given filters")
 
-        image = collection.median()
+        image = collection.limit(5).median()
 
         url = image.getThumbURL({
             "region": self.bbox,
