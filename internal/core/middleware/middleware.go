@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	core_auth "github.com/Fitray/sentinel-service/internal/core/auth"
 	core_logger "github.com/Fitray/sentinel-service/internal/core/logger"
 	core_responce "github.com/Fitray/sentinel-service/internal/core/responce"
 	"github.com/google/uuid"
@@ -14,6 +15,14 @@ const (
 	requestID = "X-Request-ID"
 	loggerKey = "logger"
 )
+
+func AuthMiddleware(authConfig core_auth.AuthConfig) Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			next.ServeHTTP(w, r)
+		})
+	}
+}
 
 func RequestID() Middleware {
 	return func(next http.Handler) http.Handler {

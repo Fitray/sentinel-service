@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 
 	core_logger "github.com/Fitray/sentinel-service/internal/core/logger"
-	sentinel_transport_http "github.com/Fitray/sentinel-service/internal/features/sentinel/transport/http"
 	"github.com/go-chi/chi"
 )
 
@@ -73,8 +73,15 @@ func (s *HTTPServer) Run(ctx context.Context) error {
 	return nil
 }
 
-func (s *HTTPServer) RegisterRoutes(routes []sentinel_transport_http.Route) {
+func (s *HTTPServer) RegisterRoutes(routes []Route) {
 	for _, route := range routes {
-		s.Mux.MethodFunc(route.Method, route.Pattern, route.Handler)
+		pattern, err := url.JoinPath("/", "api", route.Version, route.Pattern)
+		if err != nil {
+			s.Logger.Warn(
+				fmt.Sprintf("failed to register route: %s", err.Error()),
+				slog.String("pattern", route.Pattern),
+			)
+		}
+		s.Mux.MethodFunc(route.Method, pattern, route.Handler)
 	}
 }

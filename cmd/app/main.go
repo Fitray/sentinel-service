@@ -6,12 +6,18 @@ import (
 	"os/signal"
 	"syscall"
 
+	core_auth "github.com/Fitray/sentinel-service/internal/core/auth"
 	core_logger "github.com/Fitray/sentinel-service/internal/core/logger"
 	core_middleware "github.com/Fitray/sentinel-service/internal/core/middleware"
+	core_postgres "github.com/Fitray/sentinel-service/internal/core/postgres"
+	core_postgres_pool "github.com/Fitray/sentinel-service/internal/core/postgres/pool"
 	core_server "github.com/Fitray/sentinel-service/internal/core/server"
-	sentinel_repository_http "github.com/Fitray/sentinel-service/internal/features/sentinel/repository/http"
-	sentinel_service_http "github.com/Fitray/sentinel-service/internal/features/sentinel/service/http"
+	sentinel_repository_py "github.com/Fitray/sentinel-service/internal/features/sentinel/repository/python"
+	sentinel_service "github.com/Fitray/sentinel-service/internal/features/sentinel/service"
 	sentinel_transport_http "github.com/Fitray/sentinel-service/internal/features/sentinel/transport/http"
+	users_repository_postgres "github.com/Fitray/sentinel-service/internal/features/users/repository/postgres"
+	users_service "github.com/Fitray/sentinel-service/internal/features/users/service"
+	users_transport_http "github.com/Fitray/sentinel-service/internal/features/users/transport/http"
 )
 
 func main() {
@@ -32,17 +38,31 @@ func main() {
 		}
 	}()
 
-	middlewares := core_middleware.GetMiddlewares(logger)
+	authConfig := core_auth.NewAuthConfigMust()
+
+	middlewares := core_middleware.GetMiddlewares(logger, authConfig)
 
 	httpConfig := core_server.MustConfig()
 	httpServer := core_server.NewHTTPServer(httpConfig, logger, middlewares)
 
-	imageryRepository := sentinel_repository_http.NewImageryRepositoryMust()
-	imageryService := sentinel_service_http.NewImageryService(&imageryRepository)
+	imageryRepository := sentinel_repository_py.NewImageryRepositoryMust()
+	imageryService := sentinel_service.NewImageryService(&imageryRepository)
 	imageryTransport := sentinel_transport_http.NewImageryTransport(&imageryService)
 	sentinel_routes := imageryTransport.GetRoutes()
 
+	postgreConf := core_postgres.NewConfigMust()
+	pool, err := core_postgres_pool.NewConnectionPool(postgreConf)
+	if err != nil {
+		logger.Error(fmt.Errorf("connection pool: %w", err))
+		return
+	}
+	usersRepository := users_repository_postgres.NewUsersRepository(pool)
+	usersService := users_service.NewUsersService(usersRepository)
+	usersTransport := users_transport_http.NewUsersTransport(usersService)
+	users_routes := usersTransport.GetRoutes()
+
 	httpServer.RegisterRoutes(sentinel_routes)
+	httpServer.RegisterRoutes(users_routes)
 
 	err = httpServer.Run(shutdownCtx)
 	if err != nil {

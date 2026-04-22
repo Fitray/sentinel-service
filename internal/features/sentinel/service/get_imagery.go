@@ -1,4 +1,4 @@
-package sentinel_service_http
+package sentinel_service
 
 import (
 	"context"

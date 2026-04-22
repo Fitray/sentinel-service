@@ -7,8 +7,10 @@ import (
 )
 
 var (
-	ErrInvalidArg = errors.New("invalid arguement")
-	ErrBadGateway = errors.New("bad gateway")
+	ErrInvalidArg   = errors.New("invalid arguement")
+	ErrBadGateway   = errors.New("bad gateway")
+	ErrBadRequest   = errors.New("invalid arguement")
+	ErrUnauthorized = errors.New("failed to find user")
 )
 
 func GetStatusCode(err error) int {
@@ -19,6 +21,10 @@ func GetStatusCode(err error) int {
 		return http.StatusInternalServerError
 	case ErrBadGateway:
 		return http.StatusBadGateway
+	case ErrBadRequest:
+		return http.StatusBadRequest
+	case ErrUnauthorized:
+		return http.StatusUnauthorized
 	default:
 		return http.StatusInternalServerError
 	}

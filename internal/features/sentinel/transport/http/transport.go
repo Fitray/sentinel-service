@@ -3,6 +3,8 @@ package sentinel_transport_http
 import (
 	"context"
 	"net/http"
+
+	core_server "github.com/Fitray/sentinel-service/internal/core/server"
 )
 
 type ImageryTransport struct {
@@ -27,12 +29,13 @@ func NewImageryTransport(
 	}
 }
 
-func (h *ImageryTransport) GetRoutes() []Route {
-	return []Route{
+func (h *ImageryTransport) GetRoutes() []core_server.Route {
+	return []core_server.Route{
 		{
 			Pattern: "/sentinel/imagery",
 			Method:  http.MethodGet,
 			Handler: h.GetImagery,
+			Version: "v1",
 		},
 	}
 }
