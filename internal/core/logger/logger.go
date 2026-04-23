@@ -1,6 +1,7 @@
 package core_logger
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -53,8 +54,9 @@ func (l *Logger) Error(err error, args ...any) {
 	l.Logger.Error(err.Error(), args...)
 }
 
-func GetLoggerFromContext(ctx any) Logger {
-	logger, ok := ctx.(Logger)
+func GetLoggerFromContext(ctx context.Context) Logger {
+	log := ctx.Value("logger")
+	logger, ok := log.(Logger)
 	if !ok {
 		panic("failed to get logger from context")
 	}
