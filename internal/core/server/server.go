@@ -21,14 +21,10 @@ type HTTPServer struct {
 func NewHTTPServer(
 	config Config,
 	log core_logger.Logger,
-	middlewares chi.Middlewares,
 ) *HTTPServer {
-	mux := chi.NewRouter()
-	mux.Use(middlewares...)
-
 	return &HTTPServer{
 		Config: config,
-		Mux:    mux,
+		Mux:    chi.NewRouter(),
 		Logger: log,
 	}
 }
@@ -73,15 +69,18 @@ func (s *HTTPServer) Run(ctx context.Context) error {
 	return nil
 }
 
-func (s *HTTPServer) RegisterRoutes(routes []Route) {
-	for _, route := range routes {
-		pattern, err := url.JoinPath("/", "api", route.Version, route.Pattern)
-		if err != nil {
-			s.Logger.Warn(
-				fmt.Sprintf("failed to register route: %s", err.Error()),
-				slog.String("pattern", route.Pattern),
-			)
+func (s *HTTPServer) RegisterRoutes(routes []Route, middlewares chi.Middlewares) {
+	s.Mux.Group(func(r chi.Router) {
+		r.Use(middlewares...)
+		for _, route := range routes {
+			pattern, err := url.JoinPath("/", "api", route.Version, route.Pattern)
+			if err != nil {
+				s.Logger.Warn(
+					fmt.Sprintf("failed to register route: %s", err.Error()),
+					slog.String("pattern", route.Pattern),
+				)
+			}
+			r.MethodFunc(route.Method, pattern, route.Handler)
 		}
-		s.Mux.MethodFunc(route.Method, pattern, route.Handler)
-	}
+	})
 }

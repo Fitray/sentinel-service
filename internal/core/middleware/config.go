@@ -10,9 +10,9 @@ import (
 
 type Middleware func(next http.Handler) http.Handler
 
-func GetMiddlewares(
+func AuthGroupMiddlewares(
 	logger core_logger.Logger,
-	auth core_auth.AuthConfig,
+	auth core_auth.AuthService,
 ) chi.Middlewares {
 	return chi.Middlewares{
 		RequestID(),
@@ -20,5 +20,16 @@ func GetMiddlewares(
 		Panic(),
 		NewRequest(),
 		AuthMiddleware(auth),
+	}
+}
+
+func NoAuthGroupMiddlewares(
+	logger core_logger.Logger,
+) chi.Middlewares {
+	return chi.Middlewares{
+		RequestID(),
+		Logger(logger),
+		Panic(),
+		NewRequest(),
 	}
 }

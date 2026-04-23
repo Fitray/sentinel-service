@@ -2,10 +2,12 @@ package core_middleware
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 
 	core_auth "github.com/Fitray/sentinel-service/internal/core/auth"
+	core_errors "github.com/Fitray/sentinel-service/internal/core/errors"
 	core_logger "github.com/Fitray/sentinel-service/internal/core/logger"
 	core_responce "github.com/Fitray/sentinel-service/internal/core/responce"
 	"github.com/google/uuid"
@@ -16,10 +18,29 @@ const (
 	loggerKey = "logger"
 )
 
-func AuthMiddleware(authConfig core_auth.AuthConfig) Middleware {
+func AuthMiddleware(authConfig core_auth.AuthService) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			next.ServeHTTP(w, r)
+			authHeader := r.Header.Get("Authorization")
+			userId, err := authConfig.GetUserIDfromHeader(authHeader)
+
+			if err != nil {
+				logger := core_logger.GetLoggerFromContext(r.Context())
+				responceHandler := core_responce.NewResponceHandler(w, logger)
+				responceHandler.ErrorResponce(
+					fmt.Errorf("failed to authorize user: %w", err),
+					core_errors.GetStatusCode(err),
+				)
+				return
+			}
+
+			ctx := context.WithValue(
+				r.Context(),
+				"user_id", userId,
+			)
+
+			rw := r.WithContext(ctx)
+			next.ServeHTTP(w, rw)
 		})
 	}
 }

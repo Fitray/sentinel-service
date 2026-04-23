@@ -29,13 +29,18 @@ func NewImageryTransport(
 	}
 }
 
-func (h *ImageryTransport) GetRoutes() []core_server.Route {
-	return []core_server.Route{
+func (h *ImageryTransport) GetRoutes(
+	routes []core_server.Route,
+) []core_server.Route {
+	for _, v := range []core_server.Route{
 		{
 			Pattern: "/sentinel/imagery",
 			Method:  http.MethodGet,
 			Handler: h.GetImagery,
 			Version: "v1",
 		},
+	} {
+		routes = append(routes, v)
 	}
+	return routes
 }

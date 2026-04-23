@@ -38,17 +38,21 @@ func main() {
 		}
 	}()
 
-	authConfig := core_auth.NewAuthConfigMust()
+	authService := core_auth.NewAuthServiceMust()
 
-	middlewares := core_middleware.GetMiddlewares(logger, authConfig)
+	noAuthMiddlewares := core_middleware.NoAuthGroupMiddlewares(logger)
+	authMiddlewares := core_middleware.AuthGroupMiddlewares(logger, authService)
 
 	httpConfig := core_server.MustConfig()
-	httpServer := core_server.NewHTTPServer(httpConfig, logger, middlewares)
+	httpServer := core_server.NewHTTPServer(httpConfig, logger)
+
+	authGroup := make([]core_server.Route, 0)
+	noAuthGroup := make([]core_server.Route, 0)
 
 	imageryRepository := sentinel_repository_py.NewImageryRepositoryMust()
 	imageryService := sentinel_service.NewImageryService(&imageryRepository)
 	imageryTransport := sentinel_transport_http.NewImageryTransport(&imageryService)
-	sentinel_routes := imageryTransport.GetRoutes()
+	authGroup = imageryTransport.GetRoutes(authGroup)
 
 	postgreConf := core_postgres.NewConfigMust()
 	pool, err := core_postgres_pool.NewConnectionPool(postgreConf)
@@ -58,11 +62,11 @@ func main() {
 	}
 	usersRepository := users_repository_postgres.NewUsersRepository(pool)
 	usersService := users_service.NewUsersService(usersRepository)
-	usersTransport := users_transport_http.NewUsersTransport(usersService)
-	users_routes := usersTransport.GetRoutes()
+	usersTransport := users_transport_http.NewUsersTransport(usersService, &authService)
+	noAuthGroup = usersTransport.GetRoutes(noAuthGroup)
 
-	httpServer.RegisterRoutes(sentinel_routes)
-	httpServer.RegisterRoutes(users_routes)
+	httpServer.RegisterRoutes(authGroup, authMiddlewares)
+	httpServer.RegisterRoutes(noAuthGroup, noAuthMiddlewares)
 
 	err = httpServer.Run(shutdownCtx)
 	if err != nil {

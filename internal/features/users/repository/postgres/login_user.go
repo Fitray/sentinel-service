@@ -20,7 +20,7 @@ func (r *UsersRepository) LoginUser(loginRequest core_domain.LoginRequest) (
 
 	query := `
 	SELECT id, name, email, password_hash, created_at, updated_at FROM app.users
-	WHERE email=$1 LIMIT=1
+	WHERE email=$1
 	`
 
 	row := r.pool.QueryRow(ctx, query, loginRequest.Email)
@@ -28,8 +28,8 @@ func (r *UsersRepository) LoginUser(loginRequest core_domain.LoginRequest) (
 	var user core_domain.User
 
 	err := row.Scan(
-		&user.ID, &user.Email, &user.Password,
-		&user.Created_at, &user.Updated_at,
+		&user.ID, &user.Name, &user.Email,
+		&user.Password, &user.Created_at, &user.Updated_at,
 	)
 	if err != nil {
 		return core_domain.User{}, fmt.Errorf("invalid credentials: %v: %w",

@@ -77,7 +77,6 @@ class Service():
             .add(b.subtract(mean).abs())
         )
 
-        # "белые" пиксели = высокая яркость + низкая вариация
         white_pixels = mean.gt(2000).And(whiteness.lt(200))
 
         white_fraction = white_pixels.reduceRegion(

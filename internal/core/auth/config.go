@@ -6,20 +6,20 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-type AuthConfig struct {
+type AuthService struct {
 	JWTSecret string
 }
 
-func NewAuthConfig() (AuthConfig, error) {
-	var config AuthConfig
+func NewAuthService() (AuthService, error) {
+	var config AuthService
 	if err := envconfig.Process("AUTH", &config); err != nil {
-		return AuthConfig{}, err
+		return AuthService{}, err
 	}
 	return config, nil
 }
 
-func NewAuthConfigMust() AuthConfig {
-	config, err := NewAuthConfig()
+func NewAuthServiceMust() AuthService {
+	config, err := NewAuthService()
 	if err != nil {
 		panic(fmt.Errorf("couldn't get auth config: %w", err))
 	}

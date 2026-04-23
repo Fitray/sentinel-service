@@ -24,7 +24,7 @@ func (t *UsersTransport) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := t.usersService.LoginUser(loginRequest)
+	user, err := t.usersService.LoginUser(loginRequest)
 	if err != nil {
 		rw.ErrorResponce(
 			fmt.Errorf("failed to login user: %w", err),
@@ -33,4 +33,18 @@ func (t *UsersTransport) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	token, err := t.authService.GenerateToken(user)
+	if err != nil {
+		rw.ErrorResponce(
+			fmt.Errorf("failed to generate token: %w", err),
+			core_errors.GetStatusCode(err),
+		)
+		return
+	}
+
+	responce := core_domain.LoginResponce{
+		Token: token,
+	}
+
+	rw.JSONResponce(&responce, http.StatusCreated)
 }
