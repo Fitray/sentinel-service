@@ -16,9 +16,9 @@ func (r *UsersRepository) CreateUser(
 	defer cancel()
 
 	query := `
-	INSERT INTO app.users (name, email, password_hash)
+	INSERT INTO app.users (full_name, email, password_hash)
 	VALUES ($1, $2, $3)
-	RETURNING id, name, email, password_hash, created_at, updated_at
+	RETURNING id, full_name, email, password_hash, created_at, updated_at
 	`
 
 	row := r.pool.QueryRow(

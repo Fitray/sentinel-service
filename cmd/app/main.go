@@ -46,20 +46,21 @@ func main() {
 	httpConfig := core_server.MustConfig()
 	httpServer := core_server.NewHTTPServer(httpConfig, logger)
 
-	authGroup := make([]core_server.Route, 0)
-	noAuthGroup := make([]core_server.Route, 0)
-
-	imageryRepository := sentinel_repository_py.NewImageryRepositoryMust()
-	imageryService := sentinel_service.NewImageryService(&imageryRepository)
-	imageryTransport := sentinel_transport_http.NewImageryTransport(&imageryService)
-	authGroup = imageryTransport.GetRoutes(authGroup)
-
 	postgreConf := core_postgres.NewConfigMust()
 	pool, err := core_postgres_pool.NewConnectionPool(postgreConf)
 	if err != nil {
 		logger.Error(fmt.Errorf("connection pool: %w", err))
 		return
 	}
+
+	authGroup := make([]core_server.Route, 0)
+	noAuthGroup := make([]core_server.Route, 0)
+
+	imageryRepository := sentinel_repository_py.NewImageryRepositoryMust(pool)
+	imageryService := sentinel_service.NewImageryService(&imageryRepository)
+	imageryTransport := sentinel_transport_http.NewImageryTransport(&imageryService)
+	authGroup = imageryTransport.GetRoutes(authGroup)
+
 	usersRepository := users_repository_postgres.NewUsersRepository(pool)
 	usersService := users_service.NewUsersService(usersRepository)
 	usersTransport := users_transport_http.NewUsersTransport(usersService, &authService)

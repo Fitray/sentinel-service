@@ -1,0 +1,3 @@
+ALTER TABLE app.requests
+ADD COLUMN date_from VARCHAR(15),
+ADD COLUMN date_to VARCHAR(15);

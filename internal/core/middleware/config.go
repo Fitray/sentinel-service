@@ -5,7 +5,7 @@ import (
 
 	core_auth "github.com/Fitray/sentinel-service/internal/core/auth"
 	core_logger "github.com/Fitray/sentinel-service/internal/core/logger"
-	"github.com/go-chi/chi"
+	chi "github.com/go-chi/chi/v5"
 )
 
 type Middleware func(next http.Handler) http.Handler

@@ -8,7 +8,7 @@ run:
 	@go run ${PROJECT_ROOT}/cmd/app/main.go
 
 run-python:
-	@${PROJECT_ROOT}/.venv/bin/python ${PROJECT_ROOT}/internal/python/main.py ${city}
+	@${PROJECT_ROOT}/.venv/bin/python ${PROJECT_ROOT}/internal/python/main.py $(city) $(from) $(to)
 
 up-postgres:
 	@mkdir -p ${PROJECT_ROOT}/out/pgdata
