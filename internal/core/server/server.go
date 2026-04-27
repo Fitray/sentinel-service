@@ -9,7 +9,7 @@ import (
 	"net/url"
 
 	core_logger "github.com/Fitray/sentinel-service/internal/core/logger"
-	"github.com/go-chi/chi"
+	chi "github.com/go-chi/chi/v5"
 )
 
 type HTTPServer struct {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	core_domain "github.com/Fitray/sentinel-service/internal/core/domain"
 	core_server "github.com/Fitray/sentinel-service/internal/core/server"
 )
 
@@ -12,7 +13,9 @@ type ImageryTransport struct {
 }
 
 type ImageryService interface {
-	GetImagery(ctx context.Context, city, from, to string) ([]byte, error)
+	GetImagery(
+		ctx context.Context, imageryRequest core_domain.ImageryRequest,
+	) (core_domain.ImageryResponce, error)
 }
 
 type Route struct {

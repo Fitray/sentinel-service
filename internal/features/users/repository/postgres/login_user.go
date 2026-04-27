@@ -19,7 +19,7 @@ func (r *UsersRepository) LoginUser(loginRequest core_domain.LoginRequest) (
 	defer cancel()
 
 	query := `
-	SELECT id, name, email, password_hash, created_at, updated_at FROM app.users
+	SELECT id, full_name, email, password_hash, created_at, updated_at FROM app.users
 	WHERE email=$1
 	`
 

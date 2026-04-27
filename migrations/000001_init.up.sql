@@ -2,8 +2,8 @@ CREATE SCHEMA app;
 
 CREATE TABLE app.users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(100) NOT NULL CHECK(
-        char_length(name) >= 3
+    full_name VARCHAR(100) NOT NULL CHECK(
+        char_length(full_name) >= 3
     ),
 
     email TEXT NOT NULL UNIQUE,
