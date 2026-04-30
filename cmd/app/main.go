@@ -12,7 +12,7 @@ import (
 	core_postgres "github.com/Fitray/sentinel-service/internal/core/postgres"
 	core_postgres_pool "github.com/Fitray/sentinel-service/internal/core/postgres/pool"
 	core_server "github.com/Fitray/sentinel-service/internal/core/server"
-	sentinel_repository_py "github.com/Fitray/sentinel-service/internal/features/sentinel/repository/python"
+	sentinel_repository "github.com/Fitray/sentinel-service/internal/features/sentinel/repository"
 	sentinel_service "github.com/Fitray/sentinel-service/internal/features/sentinel/service"
 	sentinel_transport_http "github.com/Fitray/sentinel-service/internal/features/sentinel/transport/http"
 	users_repository_postgres "github.com/Fitray/sentinel-service/internal/features/users/repository/postgres"
@@ -56,7 +56,7 @@ func main() {
 	authGroup := make([]core_server.Route, 0)
 	noAuthGroup := make([]core_server.Route, 0)
 
-	imageryRepository := sentinel_repository_py.NewImageryRepositoryMust(pool)
+	imageryRepository := sentinel_repository.NewImageryRepositoryMust(pool)
 	imageryService := sentinel_service.NewImageryService(&imageryRepository)
 	imageryTransport := sentinel_transport_http.NewImageryTransport(&imageryService)
 	authGroup = imageryTransport.GetRoutes(authGroup)

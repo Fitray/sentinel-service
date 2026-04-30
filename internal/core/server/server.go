@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"net/url"
 
 	core_logger "github.com/Fitray/sentinel-service/internal/core/logger"
 	chi "github.com/go-chi/chi/v5"
@@ -73,13 +72,8 @@ func (s *HTTPServer) RegisterRoutes(routes []Route, middlewares chi.Middlewares)
 	s.Mux.Group(func(r chi.Router) {
 		r.Use(middlewares...)
 		for _, route := range routes {
-			pattern, err := url.JoinPath("/", "api", route.Version, route.Pattern)
-			if err != nil {
-				s.Logger.Warn(
-					fmt.Sprintf("failed to register route: %s", err.Error()),
-					slog.String("pattern", route.Pattern),
-				)
-			}
+			pattern := "/api/" + route.Version + route.Pattern
+			s.Logger.Debug("route registered", slog.String("pattern", pattern))
 			r.MethodFunc(route.Method, pattern, route.Handler)
 		}
 	})
