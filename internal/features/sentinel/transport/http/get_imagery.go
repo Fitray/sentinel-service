@@ -23,7 +23,7 @@ func (h *ImageryTransport) GetImagery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imageryRequest := h.getDTO(r, user_id)
+	imageryRequest := h.getImageryDTO(r, user_id)
 
 	output, err := h.imageryService.GetImagery(ctx, imageryRequest)
 	if err != nil {
@@ -41,7 +41,7 @@ func (h *ImageryTransport) GetImagery(w http.ResponseWriter, r *http.Request) {
 	w.Write(output.Image)
 }
 
-func (h *ImageryTransport) getDTO(r *http.Request, user_id string) core_domain.ImageryRequest {
+func (h *ImageryTransport) getImageryDTO(r *http.Request, user_id string) core_domain.ImageryRequest {
 	city := r.URL.Query().Get("city")
 	from := r.URL.Query().Get("from")
 	to := r.URL.Query().Get("to")

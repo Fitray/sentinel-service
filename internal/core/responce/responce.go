@@ -26,6 +26,7 @@ func NewResponceHandler(
 
 func (rw ResponceHandler) JSONResponce(responce any, statusCode int) {
 	rw.WriteHeader(statusCode)
+	rw.Header().Set("Content-Type", "text/json")
 	if errJson := json.NewEncoder(rw.ResponseWriter).Encode(&responce); errJson != nil {
 		rw.logger.Error(fmt.Errorf("failed to respond json: %w", errJson))
 	}

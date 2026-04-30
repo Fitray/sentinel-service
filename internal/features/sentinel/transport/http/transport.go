@@ -16,6 +16,12 @@ type ImageryService interface {
 	GetImagery(
 		ctx context.Context, imageryRequest core_domain.ImageryRequest,
 	) (core_domain.ImageryResponce, error)
+	GetHistory(
+		requestFilter core_domain.FilterRequest,
+	) ([]core_domain.NewImagery, error)
+	GetRequestFromID(
+		user_id string, idStr string,
+	) (core_domain.NewImagery, error)
 }
 
 type Route struct {
@@ -38,8 +44,20 @@ func (h *ImageryTransport) GetRoutes(
 	for _, v := range []core_server.Route{
 		{
 			Pattern: "/sentinel/imagery",
-			Method:  http.MethodGet,
+			Method:  http.MethodPost,
 			Handler: h.GetImagery,
+			Version: "v1",
+		},
+		{
+			Pattern: "/sentinel/requests",
+			Method:  http.MethodGet,
+			Handler: h.GetHistory,
+			Version: "v1",
+		},
+		{
+			Pattern: "/sentinel/requests/{id}",
+			Method:  http.MethodGet,
+			Handler: h.GetRequestFromID,
 			Version: "v1",
 		},
 	} {

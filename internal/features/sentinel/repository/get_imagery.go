@@ -1,4 +1,4 @@
-package sentinel_repository_py
+package sentinel_repository
 
 import (
 	"context"
@@ -10,10 +10,16 @@ import (
 	core_errors "github.com/Fitray/sentinel-service/internal/core/errors"
 )
 
-func (h ImageryRepository) getCmd(ctx context.Context, city, from, to string) *exec.Cmd {
+func (h ImageryRepository) getCmd(
+	ctx context.Context,
+	imageryRequest core_domain.ImageryRequest,
+) *exec.Cmd {
 	cmd_name := fmt.Sprintf("%s/.venv/bin/python", h.Root)
 	path := fmt.Sprintf("%s/internal/python/main.py", h.Root)
-	return exec.CommandContext(ctx, cmd_name, path, city, from, to)
+	return exec.CommandContext(
+		ctx, cmd_name, path,
+		imageryRequest.City, imageryRequest.From, imageryRequest.To,
+	)
 }
 
 func (h ImageryRepository) AddNewUserRequest(
@@ -64,12 +70,7 @@ func (h *ImageryRepository) GetImagery(
 	)
 	defer cancel()
 
-	cmd := h.getCmd(
-		ctxTimeout,
-		imageryRequest.City,
-		imageryRequest.From,
-		imageryRequest.To,
-	)
+	cmd := h.getCmd(ctxTimeout, imageryRequest)
 
 	output, err := cmd.CombinedOutput()
 

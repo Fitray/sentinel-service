@@ -1,4 +1,4 @@
-package sentinel_repository_py
+package sentinel_repository
 
 import (
 	"fmt"
