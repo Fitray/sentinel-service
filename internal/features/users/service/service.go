@@ -11,6 +11,7 @@ type UsersService struct {
 type UsersRepository interface {
 	CreateUser(userRequest core_domain.RegisterRequest) (core_domain.User, error)
 	LoginUser(loginRequest core_domain.LoginRequest) (core_domain.User, error)
+	GetUser(sqlCondition string, args ...any) (core_domain.User, error)
 }
 
 func NewUsersService(

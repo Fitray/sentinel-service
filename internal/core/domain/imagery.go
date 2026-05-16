@@ -4,9 +4,9 @@ import "time"
 
 type NewImagery struct {
 	ImageryRequest
-	Id         int
-	Created_at time.Time
-	Updated_at time.Time
+	Id         int       `json:"id"`
+	Created_at time.Time `json:"createdAt"`
+	Updated_at time.Time `json:"updatedAt"`
 }
 
 type ImageryResponce struct {
@@ -15,8 +15,8 @@ type ImageryResponce struct {
 }
 
 type ImageryRequest struct {
-	User_id string
-	City    string
-	From    string
-	To      string
+	User_id string `json:"userId"`
+	City    string `json:"city" validate:"required"`
+	From    string `json:"from" validate:"required"`
+	To      string `json:"to" validate:"required"`
 }

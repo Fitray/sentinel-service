@@ -68,13 +68,21 @@ func (s *HTTPServer) Run(ctx context.Context) error {
 	return nil
 }
 
-func (s *HTTPServer) RegisterRoutes(routes []Route, middlewares chi.Middlewares) {
-	s.Mux.Group(func(r chi.Router) {
-		r.Use(middlewares...)
-		for _, route := range routes {
+func (s *HTTPServer) RegisterRoutes(routes []Route) {
+	for _, route := range routes {
+		route := route
+
+		s.Mux.Group(func(r chi.Router) {
+			r.Use(route.Middlewares...)
+
 			pattern := "/api/" + route.Version + route.Pattern
-			s.Logger.Debug("route registered", slog.String("pattern", pattern))
+
+			s.Logger.Debug(
+				"route registered",
+				slog.String("pattern", pattern),
+			)
+
 			r.MethodFunc(route.Method, pattern, route.Handler)
-		}
-	})
+		})
+	}
 }

@@ -1,4 +1,4 @@
-package sentinel_transport_http
+package users_transport_http
 
 import (
 	"fmt"
@@ -7,11 +7,10 @@ import (
 	core_domain "github.com/Fitray/sentinel-service/internal/core/domain"
 	core_errors "github.com/Fitray/sentinel-service/internal/core/errors"
 	core_logger "github.com/Fitray/sentinel-service/internal/core/logger"
-	core_http_request "github.com/Fitray/sentinel-service/internal/core/request"
 	core_responce "github.com/Fitray/sentinel-service/internal/core/responce"
 )
 
-func (h *ImageryTransport) GetImagery(w http.ResponseWriter, r *http.Request) {
+func (t *UsersTransport) Me(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.GetLoggerFromContext(ctx)
 	httpHandler := core_responce.NewResponceHandler(w, logger)
@@ -25,29 +24,15 @@ func (h *ImageryTransport) GetImagery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var imageryRequest core_domain.ImageryRequest
-	err := core_http_request.DecodeAndValidateRequest(r, &imageryRequest)
+	user, err := t.usersService.Me(user_id)
 	if err != nil {
 		httpHandler.ErrorResponce(
-			fmt.Errorf("failed to decode request: %w", err),
-			http.StatusBadRequest,
-		)
-		return
-	}
-	imageryRequest.User_id = user_id
-
-	output, err := h.imageryService.GetImagery(ctx, imageryRequest)
-	if err != nil {
-		httpHandler.ErrorResponce(
-			err,
+			fmt.Errorf("failed to get user: %w"),
 			core_errors.GetStatusCode(err),
 		)
 		return
 	}
 
-	contentType := http.DetectContentType(output.Image)
-
-	w.Header().Set("Content-Type", contentType)
-	w.WriteHeader(http.StatusOK)
-	w.Write(output.Image)
+	userResponce := core_domain.NewRegisterResonce(user)
+	httpHandler.JSONResponce(userResponce, http.StatusOK)
 }
