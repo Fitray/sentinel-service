@@ -20,11 +20,12 @@ type ImageryService interface {
 		ctx context.Context, imageryRequest core_domain.ImageryRequest,
 	) (core_domain.ImageryResponce, error)
 	GetHistory(
-		requestFilter core_domain.FilterRequest,
+		ctx context.Context, requestFilter core_domain.FilterRequest,
 	) ([]core_domain.NewImagery, error)
 	GetRequestFromID(
-		user_id string, idStr string,
+		ctx context.Context, user_id string, idStr string,
 	) (core_domain.NewImagery, error)
+	RemoveRequestById(ctx context.Context, user_id string, idStr string) error
 }
 
 // type Route struct {
@@ -48,9 +49,16 @@ func (h *ImageryTransport) GetRoutes(
 ) []core_server.Route {
 	for _, v := range []core_server.Route{
 		{
-			Pattern:     "/sentinel/imagery",
+			Pattern:     "/sentinel/imagery/preview",
 			Method:      http.MethodPost,
-			Handler:     h.GetImagery,
+			Handler:     h.GetPreview,
+			Version:     "v1",
+			Middlewares: core_middleware.AuthGroupMiddlewares(logger, auth),
+		},
+		{
+			Pattern:     "/sentinel/imagery/download",
+			Method:      http.MethodPost,
+			Handler:     h.DownloadImagery,
 			Version:     "v1",
 			Middlewares: core_middleware.AuthGroupMiddlewares(logger, auth),
 		},
@@ -65,6 +73,13 @@ func (h *ImageryTransport) GetRoutes(
 			Pattern:     "/sentinel/requests/{id}",
 			Method:      http.MethodGet,
 			Handler:     h.GetRequestFromID,
+			Version:     "v1",
+			Middlewares: core_middleware.AuthGroupMiddlewares(logger, auth),
+		},
+		{
+			Pattern:     "/sentinel/requests/delete/{id}",
+			Method:      http.MethodDelete,
+			Handler:     h.RemoveRequestById,
 			Version:     "v1",
 			Middlewares: core_middleware.AuthGroupMiddlewares(logger, auth),
 		},

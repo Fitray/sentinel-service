@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Satellite Viewer</title>
+
+    <link rel="stylesheet" href="/styles/style.css" />
+</head>
+<body>
+
+    <!-- Loader -->
+    <div id="loader" class="loader hidden">
+        <div class="spinner"></div>
+        <p>Ожидание ответа сервера...</p>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification hidden"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <h1 class="logo">Satellite Viewer</h1>
+
+        <button id="authButton" class="auth-button" type="button">
+            Войти / Регистрация
+        </button>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+
+            <h2>История запросов</h2>
+
+            <div id="historyList" class="history-list"></div>
+
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Preview Title -->
+            <h2 class="preview-title">Превью снимка</h2>
+
+            <!-- Image Preview -->
+            <div class="image-container">
+
+                <img
+                    id="satelliteImage"
+                    src=""
+                    alt="Satellite image"
+                    class="satellite-image hidden"
+                />
+
+                <div id="imagePlaceholder" class="image-placeholder">
+                    Снимок пока не получен
+                </div>
+
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+
+                <div class="form-group">
+                    <label for="cityInput">Город</label>
+                    <input
+                        type="text"
+                        id="cityInput"
+                        placeholder="Введите город"
+                    />
+                </div>
+
+                <div class="date-row">
+
+                    <div class="form-group">
+                        <label for="startDate">Дата начала</label>
+                        <input type="date" id="startDate" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endDate">Дата конца</label>
+                        <input type="date" id="endDate" />
+                    </div>
+
+                </div>
+
+                <!-- Bands -->
+                <div class="form-group">
+
+                    <label>Спектральные слои</label>
+
+                    <div id="bandsContainer" class="bands-container">
+
+                        <label><input type="checkbox" value="B1"> B1</label>
+                        <label><input type="checkbox" value="B2" checked> B2</label>
+                        <label><input type="checkbox" value="B3" checked> B3</label>
+                        <label><input type="checkbox" value="B4" checked> B4</label>
+                        <label><input type="checkbox" value="B5"> B5</label>
+                        <label><input type="checkbox" value="B6"> B6</label>
+                        <label><input type="checkbox" value="B7"> B7</label>
+                        <label><input type="checkbox" value="B8"> B8</label>
+                        <label><input type="checkbox" value="B9"> B9</label>
+                        <label><input type="checkbox" value="B10"> B10</label>
+                        <label><input type="checkbox" value="B11"> B11</label>
+                        <label><input type="checkbox" value="B12"> B12</label>
+
+                    </div>
+
+                </div>
+
+                <!-- Dimensions -->
+                <div class="form-group">
+
+                    <label for="dimensionsInput">
+                        Разрешение превью снимка
+                    </label>
+
+                    <input
+                        type="number"
+                        id="dimensionsInput"
+                        placeholder="Введите dimensions"
+                        min="1"
+                        max="2048"
+                        value="2048"
+                    />
+
+                </div>
+
+                <!-- Scale -->
+                <div class="form-group">
+
+                    <label for="scaleInput">
+                        Пространственное разрешение (м)
+                    </label>
+
+                    <input
+                        type="number"
+                        id="scaleInput"
+                        placeholder="Введите scale в метрах"
+                        min="1"
+                        step="1"
+                    />
+
+                </div>
+
+                <div class="action-buttons">
+
+                    <button id="requestButton" class="request-button" type="button">
+                        Получить превью
+                    </button>
+
+                    <button id="downloadButton" class="download-button" type="button">
+                        Скачать снимок
+                    </button>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal hidden">
+
+        <div class="modal-content">
+
+            <button id="closeModal" class="close-button" type="button">
+                ×
+            </button>
+
+            <div class="tabs">
+
+                <button class="tab-button active" data-tab="login" type="button">
+                    Вход
+                </button>
+
+                <button class="tab-button" data-tab="register" type="button">
+                    Регистрация
+                </button>
+
+            </div>
+
+            <!-- Login -->
+            <form id="loginForm" class="auth-form">
+
+                <input type="email" placeholder="Email" required />
+                <input type="password" placeholder="Пароль" required />
+
+                <button type="submit">Войти</button>
+
+            </form>
+
+            <!-- Register -->
+            <form id="registerForm" class="auth-form hidden">
+
+                <input type="text" placeholder="Имя" required />
+                <input type="email" placeholder="Email" required />
+                <input type="password" placeholder="Пароль" required />
+
+                <button type="submit">Зарегистрироваться</button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- Image Viewer -->
+    <div id="imageViewer" class="image-viewer hidden">
+        <img id="viewerImage" class="viewer-image" />
+    </div>
+
+    <!-- Download Format Modal -->
+    <div id="formatModal" class="modal hidden">
+        <div class="modal-content small-modal">
+
+            <button
+                id="closeFormatModal"
+                class="close-button"
+                type="button"
+            >
+                ×
+            </button>
+
+            <h3>Выберите формат</h3>
+
+            <button class="format-button" data-format="png">
+                PNG
+            </button>
+
+            <button class="format-button" data-format="geotiff">
+                GeoTIFF
+            </button>
+
+        </div>
+    </div>
+
+    <script src="../scripts/script.js" defer></script>
+</body>
+</html>

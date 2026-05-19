@@ -1,6 +1,7 @@
 package sentinel_service
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -9,7 +10,7 @@ import (
 )
 
 func (s *ImageryService) GetHistory(
-	requestFilter core_domain.FilterRequest,
+	ctx context.Context, requestFilter core_domain.FilterRequest,
 ) ([]core_domain.NewImagery, error) {
 	if requestFilter.From.After(requestFilter.To) {
 		return []core_domain.NewImagery{},
@@ -17,7 +18,7 @@ func (s *ImageryService) GetHistory(
 				core_errors.ErrBadRequest,
 			)
 	}
-	reqHistory, err := s.imageryRepositiry.GetHistory(requestFilter)
+	reqHistory, err := s.imageryRepositiry.GetHistory(ctx, requestFilter)
 	if err != nil {
 		return []core_domain.NewImagery{}, err
 	}
@@ -25,7 +26,7 @@ func (s *ImageryService) GetHistory(
 }
 
 func (s *ImageryService) GetRequestFromID(
-	user_id string, idStr string,
+	ctx context.Context, user_id string, idStr string,
 ) (core_domain.NewImagery, error) {
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -34,7 +35,7 @@ func (s *ImageryService) GetRequestFromID(
 				core_errors.ErrBadRequest, err)
 	}
 
-	resp, err := s.imageryRepositiry.GetRequestFromID(user_id, id)
+	resp, err := s.imageryRepositiry.GetRequestFromID(ctx, user_id, id)
 	if err != nil {
 		return core_domain.NewImagery{}, err
 	}

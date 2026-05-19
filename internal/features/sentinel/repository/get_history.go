@@ -3,22 +3,23 @@ package sentinel_repository
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	core_domain "github.com/Fitray/sentinel-service/internal/core/domain"
 	core_errors "github.com/Fitray/sentinel-service/internal/core/errors"
 )
 
 func (r *ImageryRepository) GetHistory(
-	requestFilter core_domain.FilterRequest,
+	ctx context.Context, requestFilter core_domain.FilterRequest,
 ) ([]core_domain.NewImagery, error) {
 	ctxTimeout, cancel := context.WithTimeout(
-		context.Background(),
+		ctx,
 		r.Timeout,
 	)
 	defer cancel()
 
 	query := `
-	SELECT id, user_id, city, date_from, date_to, created_at, updated_at
+	SELECT id, user_id, city, date_from, date_to, bands, scale, dimensions, created_at, updated_at
 	FROM app.requests
 	WHERE user_id = $1
 	`
@@ -30,6 +31,15 @@ func (r *ImageryRepository) GetHistory(
 		query += fmt.Sprintf(" AND city = $%d", argPos)
 		args = append(args, requestFilter.City)
 		argPos++
+	}
+
+	if requestFilter.Id != "" {
+		query += fmt.Sprintf(" AND id = $%d", argPos)
+		id, err := strconv.Atoi(requestFilter.Id)
+		if err == nil {
+			args = append(args, id)
+			argPos++
+		}
 	}
 
 	if !requestFilter.From.IsZero() {
@@ -58,8 +68,7 @@ func (r *ImageryRepository) GetHistory(
 	for rows.Next() {
 		var row core_domain.NewImagery
 		if err := rows.Scan(
-			&row.Id, &row.User_id, &row.City,
-			&row.From, &row.To, &row.Created_at, &row.Updated_at,
+			&row.Id, &row.User_id, &row.City, &row.From, &row.To, &row.Bands, &row.Scale, &row.Dimensions, &row.Created_at, &row.Updated_at,
 		); err != nil {
 			return nil, fmt.Errorf("failed to scan row: %v: %w",
 				core_errors.ErrInvalidFilter,
@@ -73,16 +82,16 @@ func (r *ImageryRepository) GetHistory(
 }
 
 func (r *ImageryRepository) GetRequestFromID(
-	user_id string, id int,
+	ctx context.Context, user_id string, id int,
 ) (core_domain.NewImagery, error) {
 	ctxTimeout, cancel := context.WithTimeout(
-		context.Background(),
+		ctx,
 		r.Timeout,
 	)
 	defer cancel()
 
 	query := `
-	SELECT id, user_id, city, date_from, date_to, created_at, updated_at
+	SELECT id, user_id, city, date_from, date_to, bands, scale, dimensions, created_at, updated_at
 	FROM app.requests
 	WHERE user_id = $1 AND id = $2
 	`
@@ -93,7 +102,7 @@ func (r *ImageryRepository) GetRequestFromID(
 
 	if err := row.Scan(
 		&resp.Id, &resp.User_id, &resp.City, &resp.From,
-		&resp.To, &resp.Created_at, &resp.Updated_at,
+		&resp.To, &resp.Bands, &resp.Scale, &resp.Dimensions, &resp.Created_at, &resp.Updated_at,
 	); err != nil {
 		return core_domain.NewImagery{},
 			fmt.Errorf("failed to scan row: %w", err)

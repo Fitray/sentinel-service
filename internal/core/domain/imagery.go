@@ -15,8 +15,13 @@ type ImageryResponce struct {
 }
 
 type ImageryRequest struct {
-	User_id string `json:"userId"`
-	City    string `json:"city" validate:"required"`
-	From    string `json:"from" validate:"required"`
-	To      string `json:"to" validate:"required"`
+	User_id      string `json:"userId"`
+	City         string `json:"city" validate:"required"`
+	From         string `json:"from" validate:"required"`
+	To           string `json:"to" validate:"required"`
+	Bands        string `json:"bands" validate:"required"`
+	Dimensions   int    `json:"dimensions" validate:"required"`
+	Scale        int    `json:"scale" validate:"required"`
+	Id           string `json:"id"`
+	OutputFormat string `json:"output_format"`
 }

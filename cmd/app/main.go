@@ -62,6 +62,7 @@ func main() {
 	routes = usersTransport.GetRoutes(routes, logger, authService)
 
 	httpServer.RegisterRoutes(routes)
+	httpServer.RegisterWeb()
 
 	err = httpServer.Run(shutdownCtx)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 
 	core_logger "github.com/Fitray/sentinel-service/internal/core/logger"
 	chi "github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 )
 
 type HTTPServer struct {
@@ -21,9 +22,39 @@ func NewHTTPServer(
 	config Config,
 	log core_logger.Logger,
 ) *HTTPServer {
+	r := chi.NewRouter()
+
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{
+			"http://localhost:5500",
+			"http://127.0.0.1:5500",
+		},
+
+		AllowedMethods: []string{
+			"GET",
+			"POST",
+			"PUT",
+			"DELETE",
+			"OPTIONS",
+		},
+
+		AllowedHeaders: []string{
+			"Accept",
+			"Authorization",
+			"Content-Type",
+		},
+
+		ExposedHeaders: []string{
+			"Link",
+		},
+
+		AllowCredentials: false,
+
+		MaxAge: 300,
+	}))
 	return &HTTPServer{
 		Config: config,
-		Mux:    chi.NewRouter(),
+		Mux:    r,
 		Logger: log,
 	}
 }
@@ -85,4 +116,12 @@ func (s *HTTPServer) RegisterRoutes(routes []Route) {
 			r.MethodFunc(route.Method, pattern, route.Handler)
 		})
 	}
+}
+
+func (s *HTTPServer) RegisterWeb() {
+	s.Mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./web/pages/index.html")
+	})
+
+	s.Mux.Handle("/*", http.FileServer(http.Dir("./web")))
 }

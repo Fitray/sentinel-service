@@ -99,6 +99,7 @@ func NewRequest() Middleware {
 				slog.String(requestID, reqId),
 				slog.String("Method", r.Method),
 				slog.Int("statusCode", responseHandler.StatusCode),
+				slog.String("Pattern", r.Pattern),
 			)
 		})
 	}
