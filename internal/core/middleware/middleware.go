@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
 
 	core_auth "github.com/Fitray/sentinel-service/internal/core/auth"
 	core_errors "github.com/Fitray/sentinel-service/internal/core/errors"
@@ -29,7 +30,9 @@ func AuthMiddleware(authConfig core_auth.AuthService) Middleware {
 				responceHandler := core_responce.NewResponceHandler(w, logger)
 				responceHandler.ErrorResponce(
 					fmt.Errorf("failed to authorize user: %w", err),
-					core_errors.GetStatusCode(err),
+					core_errors.GetStatusCode(
+						core_errors.ErrUnauthorized,
+					),
 				)
 				return
 			}
@@ -93,13 +96,18 @@ func NewRequest() Middleware {
 			reqId := r.Header.Get(requestID)
 			responseHandler := core_responce.NewResponceHandler(w, log)
 
+			start := time.Now()
+
 			next.ServeHTTP(responseHandler, r)
+
+			eclipsed := time.Since(start)
 
 			log.Info("new request",
 				slog.String(requestID, reqId),
 				slog.String("Method", r.Method),
 				slog.Int("statusCode", responseHandler.StatusCode),
 				slog.String("Pattern", r.Pattern),
+				slog.Int64("Time eclipsed", eclipsed.Nanoseconds()),
 			)
 		})
 	}
