@@ -15,11 +15,14 @@ type ImageryRepository interface {
 		ctx context.Context, imageryRequest core_domain.ImageryRequest,
 	) (core_domain.ImageryResponce, error)
 	GetHistory(
-		requestFilter core_domain.FilterRequest,
+		ctx context.Context, requestFilter core_domain.FilterRequest,
 	) ([]core_domain.NewImagery, error)
 	GetRequestFromID(
-		user_id string, id int,
+		ctx context.Context, user_id string, id int,
 	) (core_domain.NewImagery, error)
+	RemoveRequestById(
+		ctx context.Context, user_id string, id int,
+	) error
 }
 
 func NewImageryService(

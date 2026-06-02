@@ -1,12 +1,17 @@
 package core_server
 
-import "net/http"
+import (
+	"net/http"
+
+	chi "github.com/go-chi/chi/v5"
+)
 
 type Route struct {
-	Method  string
-	Pattern string
-	Handler http.HandlerFunc
-	Version string
+	Method      string
+	Pattern     string
+	Handler     http.HandlerFunc
+	Version     string
+	Middlewares chi.Middlewares
 }
 
 // func NewRoute(

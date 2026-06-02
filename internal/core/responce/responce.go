@@ -36,8 +36,8 @@ func (rw ResponceHandler) PanicResponce(msg string, p any) {
 	err := fmt.Errorf("a panic occurred during app runtime: %v", p)
 
 	responce := map[string]string{
-		"Error":   err.Error(),
-		"Message": msg,
+		"error":   err.Error(),
+		"message": msg,
 	}
 
 	rw.JSONResponce(responce, http.StatusInternalServerError)
@@ -45,7 +45,7 @@ func (rw ResponceHandler) PanicResponce(msg string, p any) {
 
 func (rw ResponceHandler) ErrorResponce(err error, statusCode int) {
 	responce := map[string]string{
-		"Error": err.Error(),
+		"error": err.Error(),
 	}
 
 	rw.JSONResponce(responce, statusCode)

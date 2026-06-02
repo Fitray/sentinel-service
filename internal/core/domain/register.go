@@ -12,8 +12,8 @@ type RegisterResponce struct {
 	Name       string    `json:"name"`
 	Email      string    `json:"email"`
 	ID         string    `json:"id"`
-	Created_at time.Time `json:"created_at"`
-	Updated_at time.Time `json:"updated_at"`
+	Created_at time.Time `json:"createdAt"`
+	Updated_at time.Time `json:"updatedAt"`
 }
 
 func NewRegisterResonce(user User) *RegisterResponce {

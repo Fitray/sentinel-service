@@ -7,4 +7,5 @@ type FilterRequest struct {
 	From    time.Time
 	To      time.Time
 	User_id string
+	Id      string
 }

@@ -8,7 +8,6 @@ import (
 
 	core_auth "github.com/Fitray/sentinel-service/internal/core/auth"
 	core_logger "github.com/Fitray/sentinel-service/internal/core/logger"
-	core_middleware "github.com/Fitray/sentinel-service/internal/core/middleware"
 	core_postgres "github.com/Fitray/sentinel-service/internal/core/postgres"
 	core_postgres_pool "github.com/Fitray/sentinel-service/internal/core/postgres/pool"
 	core_server "github.com/Fitray/sentinel-service/internal/core/server"
@@ -40,9 +39,6 @@ func main() {
 
 	authService := core_auth.NewAuthServiceMust()
 
-	noAuthMiddlewares := core_middleware.NoAuthGroupMiddlewares(logger)
-	authMiddlewares := core_middleware.AuthGroupMiddlewares(logger, authService)
-
 	httpConfig := core_server.MustConfig()
 	httpServer := core_server.NewHTTPServer(httpConfig, logger)
 
@@ -53,21 +49,20 @@ func main() {
 		return
 	}
 
-	authGroup := make([]core_server.Route, 0)
-	noAuthGroup := make([]core_server.Route, 0)
+	routes := make([]core_server.Route, 0)
 
 	imageryRepository := sentinel_repository.NewImageryRepositoryMust(pool)
 	imageryService := sentinel_service.NewImageryService(&imageryRepository)
 	imageryTransport := sentinel_transport_http.NewImageryTransport(&imageryService)
-	authGroup = imageryTransport.GetRoutes(authGroup)
+	routes = imageryTransport.GetRoutes(routes, logger, authService)
 
 	usersRepository := users_repository_postgres.NewUsersRepository(pool)
 	usersService := users_service.NewUsersService(usersRepository)
 	usersTransport := users_transport_http.NewUsersTransport(usersService, &authService)
-	noAuthGroup = usersTransport.GetRoutes(noAuthGroup)
+	routes = usersTransport.GetRoutes(routes, logger, authService)
 
-	httpServer.RegisterRoutes(authGroup, authMiddlewares)
-	httpServer.RegisterRoutes(noAuthGroup, noAuthMiddlewares)
+	httpServer.RegisterRoutes(routes)
+	httpServer.RegisterWeb()
 
 	err = httpServer.Run(shutdownCtx)
 	if err != nil {

@@ -33,7 +33,7 @@ func (t *ImageryTransport) GetHistory(
 		return
 	}
 
-	reqHistory, err := t.imageryService.GetHistory(requestFilter)
+	reqHistory, err := t.imageryService.GetHistory(ctx, requestFilter)
 	if err != nil {
 		httpHandler.ErrorResponce(err, core_errors.GetStatusCode(err))
 		return
@@ -46,8 +46,8 @@ func (t *ImageryTransport) GetRequestFromID(w http.ResponseWriter, r *http.Reque
 	ctx := r.Context()
 	logger := core_logger.GetLoggerFromContext(ctx)
 	httpHandler := core_responce.NewResponceHandler(w, logger)
-	user_id := ctx.Value("user_id").(string)
-	if user_id == "" {
+	user_id, ok := ctx.Value("user_id").(string)
+	if !ok || user_id == "" {
 		httpHandler.ErrorResponce(
 			fmt.Errorf("failed to get user id: %w", core_errors.ErrUnauthorized),
 			core_errors.GetStatusCode(core_errors.ErrUnauthorized),
@@ -56,7 +56,7 @@ func (t *ImageryTransport) GetRequestFromID(w http.ResponseWriter, r *http.Reque
 	}
 
 	idStr := chi.URLParam(r, "id")
-	resp, err := t.imageryService.GetRequestFromID(user_id, idStr)
+	resp, err := t.imageryService.GetRequestFromID(ctx, user_id, idStr)
 	if err != nil {
 		httpHandler.ErrorResponce(
 			err, core_errors.GetStatusCode(err),
